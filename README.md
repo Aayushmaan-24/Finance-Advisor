@@ -51,7 +51,8 @@ Welcome to the **AI-Powered Finance Advisor** app! This is a smart finance plann
 5. Open the provided local URL in your web browser to start using the app!
 
 
-Requirements
+## Requirements
+
 Python 3.x
 
 Streamlit
@@ -72,5 +73,6 @@ yfinance
 
 For the full list of dependencies, check out the requirements.txt file.
 
-License
+## License
+
 This project is licensed under the MIT License - see the LICENSE file for details.
