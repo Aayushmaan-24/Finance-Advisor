@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.linear_model import LinearRegression
 import yfinance as yf
+import plotly.express as px
 
 # Streamlit UI
 st.set_page_config(page_title="💰 AI-Powered Finance Advisor", layout="wide")
@@ -124,14 +125,17 @@ if stock_ticker:
             st.warning("⚠️ Invalid stock symbol or no data available. Please try a valid stock symbol.")
             st.info("Example stock symbols: AAPL (Apple), TSLA (Tesla), BTC-USD (Bitcoin), AMZN (Amazon)")
         else:
-            # Plot stock data if valid
-            fig4, ax4 = plt.subplots()
-            ax4.plot(stock_data.index, stock_data['Close'], label=f"{stock_ticker} Closing Price", color='purple')
-            ax4.set_xlabel("Date")
-            ax4.set_ylabel(f"Price ({currency})")
-            ax4.set_title(f"📊 {stock_ticker} Stock Price Trend")
-            ax4.legend()
-            st.pyplot(fig4)
+            # Plot stock data using Plotly
+            fig4 = px.line(
+                stock_data,
+                x=stock_data.index,
+                y='Close',
+                labels={'x': 'Date', 'Close': f'Price ({currency})'},
+                title=f"📊 {stock_ticker} Stock Price Trend"
+            )
+            fig4.update_traces(line_color='purple', name=f"{stock_ticker} Closing Price")
+            fig4.update_layout(showlegend=True)
+            st.plotly_chart(fig4, use_container_width=True)
     except Exception as e:
         st.error(f"⚠️ Error fetching data: {e}. Please try again with a valid stock symbol.")
         st.info("Example stock symbols: AAPL (Apple), TSLA (Tesla), BTC-USD (Bitcoin), AMZN (Amazon)")
