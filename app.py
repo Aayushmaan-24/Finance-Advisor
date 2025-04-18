@@ -17,13 +17,33 @@ st.sidebar.header("🔹 Financial Inputs")
 # Currency Selection
 currency = st.sidebar.selectbox("Select Currency:", ["₹", "$", "€", "£", "¥"], index=0)
 
-# User Inputs
-income = st.sidebar.number_input(f"Monthly Income ({currency}):", min_value=0)
-expenses = st.sidebar.number_input(f"Monthly Expenses ({currency}):", min_value=0)
-savings = income - expenses
+# User Inputs: Income
+income = st.sidebar.number_input(f"Monthly Income ({currency}):", min_value=0.0, step=100.0)
 
-goal = st.sidebar.number_input(f"Savings Goal ({currency}):", min_value=0)
-time_period = st.sidebar.number_input("Target Months to Achieve Goal:", min_value=1)
+# Expense Categories
+st.sidebar.subheader("💸 Monthly Expenses")
+expense_categories = {
+    "Rent/Mortgage": st.sidebar.number_input(f"Rent/Mortgage ({currency}):", min_value=0.0, step=10.0),
+    "Groceries": st.sidebar.number_input(f"Groceries ({currency}):", min_value=0.0, step=10.0),
+    "Utilities": st.sidebar.number_input(f"Utilities ({currency}):", min_value=0.0, step=10.0),
+    "Transportation": st.sidebar.number_input(f"Transportation ({currency}):", min_value=0.0, step=10.0),
+    "Entertainment": st.sidebar.number_input(f"Entertainment ({currency}):", min_value=0.0, step=10.0),
+}
+
+# Allow custom expense categories
+st.sidebar.subheader("➕ Add Custom Expense")
+custom_expense_name = st.sidebar.text_input("Custom Expense Name (e.g., Gym):")
+custom_expense_amount = st.sidebar.number_input(f"Custom Expense Amount ({currency}):", min_value=0.0, step=10.0)
+if custom_expense_name and custom_expense_amount > 0:
+    expense_categories[custom_expense_name] = custom_expense_amount
+
+# Calculate total expenses and savings
+total_expenses = sum(expense_categories.values())
+savings = income - total_expenses
+
+# Savings Goal and Time Period
+goal = st.sidebar.number_input(f"Savings Goal ({currency}):", min_value=0.0, step=100.0)
+time_period = st.sidebar.number_input("Target Months to Achieve Goal:", min_value=1, step=1)
 
 # Analysis Section
 st.subheader("📊 Financial Overview")
@@ -31,7 +51,7 @@ st.subheader("📊 Financial Overview")
 col1, col2 = st.columns(2)
 
 with col1:
-    st.metric("💰 Monthly Savings", f"{currency}{savings}")
+    st.metric("💰 Monthly Savings", f"{currency}{savings:.2f}")
     if savings > 0:
         months_needed = goal / savings if savings > 0 else float('inf')
         st.metric("🎯 Time to Achieve Goal", f"{months_needed:.1f} months")
@@ -39,15 +59,20 @@ with col1:
         st.error("⚠️ Your expenses exceed income! Consider adjusting your budget.")
 
 with col2:
-    labels = ['Expenses', 'Savings']
-    values = [expenses, savings if savings > 0 else 0]
-    if sum(values) > 0:  # Ensure total is not zero
+    # Prepare data for pie chart
+    labels = list(expense_categories.keys()) + ["Savings"]
+    values = list(expense_categories.values()) + [savings if savings > 0 else 0]
+    # Filter out zero values to avoid clutter
+    filtered_labels = [label for label, value in zip(labels, values) if value > 0]
+    filtered_values = [value for value in values if value > 0]
+    
+    if sum(filtered_values) > 0:  # Ensure total is not zero
         fig, ax = plt.subplots()
-        ax.pie(values, labels=labels, autopct='%1.1f%%', colors=['#FF6F61', '#6B8E23'])
-        ax.set_title("💡 Savings vs Expenses")
+        ax.pie(filtered_values, labels=filtered_labels, autopct='%1.1f%%', colors=sns.color_palette("Set2", len(filtered_labels)))
+        ax.set_title("💡 Expenses Breakdown and Savings")
         st.pyplot(fig)
     else:
-        st.warning("⚠️ No valid data to display in pie chart (both expenses and savings are zero).")
+        st.warning("⚠️ No valid data to display in pie chart (all expenses and savings are zero).")
 
 # Savings Trend Prediction
 st.subheader("📈 Future Savings Prediction")
@@ -81,8 +106,8 @@ st.info(f"For a **{option}-risk** strategy, consider: {investment_strategies[opt
 
 # Investment Simulation with Real-time Market Data
 st.subheader("📊 Investment Growth Simulation")
-initial_investment = st.number_input(f"Initial Investment Amount ({currency}):", min_value=0)
-monthly_contribution = st.number_input(f"Monthly Investment Contribution ({currency}):", min_value=0)
+initial_investment = st.number_input(f"Initial Investment Amount ({currency}):", min_value=0.0, step=100.0)
+monthly_contribution = st.number_input(f"Monthly Investment Contribution ({currency}):", min_value=0.0, step=10.0)
 investment_years = st.slider("Investment Duration (Years):", 1, 30, 10)
 expected_return = {'Low': 5, 'Medium': 10, 'High': 15}[option]  # Expected annual return in %
 
@@ -110,7 +135,6 @@ if stock_ticker:
     except Exception as e:
         st.error(f"⚠️ Error fetching data: {e}. Please try again with a valid stock symbol.")
         st.info("Example stock symbols: AAPL (Apple), TSLA (Tesla), BTC-USD (Bitcoin), AMZN (Amazon)")
-
 
 # Simulating Investment Growth
 months = np.arange(1, investment_years * 12 + 1)
