@@ -1,0 +1,37 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.db
+*.sqlite
+
+# Virtual Environment
+venv/
+.env/
+
+# Streamlit config
+config/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# IDE/Editor Files
+.idea/
+.vscode/
+
+# MacOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Log files
+*.log
+
+# Cache
+.cache/
+
+# Other
+*.env
+*.envrc
